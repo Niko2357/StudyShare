@@ -9,12 +9,26 @@ use Illuminate\Support\Facades\Storage;
 
 class MaterialController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $materials = Material::with(['user', 'subject', 'category', 'files'])
-            ->latest()
-            ->get();
-        return response()->json($materials);
+        $query = Material::with(['user', 'subject', 'category', 'files']);
+
+    if ($request->has('subject_id')) {
+        $query->where('subject_id', $request->input('subject_id'));
+    }
+
+    if ($request->has('category_id')) {
+        $query->where('category_id', $request->input('category_id'));
+    }
+
+    if ($request->has('search')) {
+        $searchTerm = $request->input('search');
+        $query->where('title', 'ilike', '%' . $searchTerm . '%');
+    }
+
+    $materials = $query->latest()->get();
+
+    return response()->json($materials);
     }
 
     public function store(Request $request)
